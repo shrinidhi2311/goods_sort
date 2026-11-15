@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Goods Sort Mobile Clone</title>
+    <style>
+        * { box-sizing: border-box; user-select: none; }
+        body {
+            margin: 0; padding: 0;
+            background: #1a1a2e;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        header {
+            text-align: center;
+            padding: 10px;
+            background: #16213e;
+            width: 100%;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        h1 { margin: 0; font-size: 1.2rem; color: #e94560; }
+        .stats { font-size: 0.9rem; margin-top: 4px; color: #aaa; }
+        
+        #game-container {
+            flex: 1;
+            width: 100%;
+            max-width: 500px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 12px;
+        }
+        .shelf {
+            background: #0f3460;
+            border-radius: 12px;
+            height: 85px;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 8px;
+            box-shadow: inset 0 4px 6px rgba(0,0,0,0.4), 0 4px 6px rgba(0,0,0,0.2);
+            border-bottom: 5px solid #e94560;
+            position: relative;
+        }
+        .item {
+            width: 55px;
+            height: 65px;
+            background: #533483;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: transform 0.1s, background 0.2s;
+        }
+        .item:active { transform: scale(0.9); }
+        .item.selected {
+            background: #e94560;
+            transform: translateY(-8px);
+            box-shadow: 0 8px 12px rgba(233, 69, 96, 0.4);
+        }
+        .item.empty {
+            background: rgba(255,255,255,0.03);
+            box-shadow: none;
+            border: 2px dashed rgba(255,255,255,0.1);
+            cursor: default;
+        }
+        #tray {
+            background: #16213e;
+            border-radius: 12px;
+            min-height: 85px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px;
+            border: 2px dashed #533483;
+        }
+        #message {
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: bold;
+            height: 30px;
+            color: #4ecc6d;
+        }
+        button.btn {
+            background: #e94560;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px auto;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Goods Sort Mobile</h1>
+        <div class="stats">Score: <span id="score">0</span> | Matches Left: <span id="matches-left">--</span></div>
+    </header>
+
+    <div id="game-container">
+        <div id="message">Tap items to collect & match 3!</div>
+        <div id="shelves-area"></div>
+        <div id="tray" title="Matching Tray"></div>
+    </div>
+
+    <button class="btn" onclick="initGame()">Restart Game</button>
+
+<script>
+    const icons = ['🥤', '🍿', '🍎', '🍫', '🥫', '🧃'];
+    let shelves = [];
+    let tray = [];
+    let score = 0;
+    const maxTraySize = 6;
+
+    function initGame() {
+        score = 0;
+        document.getElementById('score').innerText = score;
+        // Generate random shelves setup (3 shelves, 4 items each)
+        shelves = [];
+        for (let i = 0; i < 3; i++) {
+            let shelf = [];
+            for (let j = 0; j < 4; j++) {
+                // Pick random icon ensuring balance
+                let randomIcon = icons[Math.floor(Math.random() * icons.length)];
+                shelf.push(randomIcon);
+            }
+            shelves.push(shelf);
+        }
+        tray = [];
+        render();
+    }
+
+    function render() {
+        const shelvesArea = document.getElementById('shelves-area');
+        shelvesArea.innerHTML = '';
+        
+        let totalItems = 0;
+
+        shelves.forEach((shelf, sIdx) => {
+            const shelfDiv = document.createElement('div');
+            shelfDiv.className = 'shelf';
+            shelf.forEach((item, iIdx) => {
+                const itemDiv = document.createElement('div');
+                if (item) {
+                    totalItems++;
+                    itemDiv.className = 'item';
+                    itemDiv.innerText = item;
+                    itemDiv.onclick = () => handleItemClick(sIdx, iIdx);
+                } else {
+                    itemDiv.className = 'item empty';
+                }
+                shelfDiv.appendChild(itemDiv);
+            });
+            shelvesArea.appendChild(shelfDiv);
+        });
+
+        // Render Tray
+        const trayDiv = document.getElementById('tray');
+        trayDiv.innerHTML = '';
+        for (let i = 0; i < maxTraySize; i++) {
+            const slotDiv = document.createElement('div');
+            if (i < tray.length) {
+                slotDiv.className = 'item selected';
+                slotDiv.innerText = tray[i];
+            } else {
+                slotDiv.className = 'item empty';
+            }
+            trayDiv.appendChild(slotDiv);
+        }
+
+        document.getElementById('matches-left').innerText = totalItems;
+
+        // Check Win/Loss conditions
+        let msg = document.getElementById('message');
+        if (totalItems === 0) {
+            msg.innerText = "🎉 Level Cleared!";
+        } else if (tray.length >= maxTraySize) {
+            msg.innerText = "❌ Tray Full! Game Over.";
+        } else {
+            msg.innerText = "Sort goods into matching triples!";
+        }
+    }
+
+    function handleItemClick(sIdx, iIdx) {
+        if (tray.length >= maxTraySize) return;
+        let item = shelves[sIdx][iIdx];
+        if (!item) return;
+
+        // Move item to tray
+        shelves[sIdx][iIdx] = null;
+        tray.push(item);
+
+        // Check matches in tray (Triple match check)
+        checkTriples();
+        render();
+    }
+
+    function checkTriples() {
+        let counts = {};
+        tray.forEach(item => counts[item] = (counts[item] || 0) + 1);
+
+        for (let item in counts) {
+            if (counts[item] >= 3) {
+                // Remove 3 of them
+                let removed = 0;
+                tray = tray.filter(i => {
+                    if (i === item && removed < 3) {
+                        removed++;
+                        return false;
+                    }
+                    return true;
+                });
+                score += 100;
+                document.getElementById('score').innerText = score;
+            }
+        }
+    }
+
+    initGame();
+</script>
+</body>
+</html>
