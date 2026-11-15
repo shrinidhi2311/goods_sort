@@ -1,239 +1,288 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Goods Sort Mobile Clone</title>
-    <style>
-        * { box-sizing: border-box; user-select: none; }
-        body {
-            margin: 0; padding: 0;
-            background: #1a1a2e;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: #fff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-        }
-        header {
-            text-align: center;
-            padding: 10px;
-            background: #16213e;
-            width: 100%;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-        }
-        h1 { margin: 0; font-size: 1.2rem; color: #e94560; }
-        .stats { font-size: 0.9rem; margin-top: 4px; color: #aaa; }
-        
-        #game-container {
-            flex: 1;
-            width: 100%;
-            max-width: 500px;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 12px;
-        }
-        .shelf {
-            background: #0f3460;
-            border-radius: 12px;
-            height: 85px;
-            display: flex;
-            align-items: center;
-            justify-content: space-around;
-            padding: 8px;
-            box-shadow: inset 0 4px 6px rgba(0,0,0,0.4), 0 4px 6px rgba(0,0,0,0.2);
-            border-bottom: 5px solid #e94560;
-            position: relative;
-        }
-        .item {
-            width: 55px;
-            height: 65px;
-            background: #533483;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            transition: transform 0.1s, background 0.2s;
-        }
-        .item:active { transform: scale(0.9); }
-        .item.selected {
-            background: #e94560;
-            transform: translateY(-8px);
-            box-shadow: 0 8px 12px rgba(233, 69, 96, 0.4);
-        }
-        .item.empty {
-            background: rgba(255,255,255,0.03);
-            box-shadow: none;
-            border: 2px dashed rgba(255,255,255,0.1);
-            cursor: default;
-        }
-        #tray {
-            background: #16213e;
-            border-radius: 12px;
-            min-height: 85px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 10px;
-            border: 2px dashed #533483;
-        }
-        #message {
-            text-align: center;
-            font-size: 1.1rem;
-            font-weight: bold;
-            height: 30px;
-            color: #4ecc6d;
-        }
-        button.btn {
-            background: #e94560;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            margin: 10px auto;
-            display: block;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Goods Sort - Shelf Match Puzzle</title>
+  <style>
+    * { box-sizing: border-box; user-select: none; font-family: 'Segoe UI', Tahoma, sans-serif; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #2c1e16, #4a3222);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    h1 { margin: 0 0 6px; font-size: 1.8rem; letter-spacing: 1px; color: #ffda79; }
+    .stats {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      font-size: 1.05rem;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 8px 18px;
+      border-radius: 20px;
+    }
+    .cabinet {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      background: #6f472b;
+      padding: 18px;
+      border-radius: 14px;
+      border: 6px solid #3d2414;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+      max-width: 720px;
+      width: 100%;
+    }
+    @media (max-width: 600px) {
+      .cabinet { grid-template-columns: repeat(2, 1fr); }
+    }
+    .shelf {
+      background: #3b2313;
+      border-bottom: 8px solid #8c5a36;
+      border-radius: 8px;
+      padding: 10px 8px 6px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      min-height: 82px;
+      box-shadow: inset 0 6px 12px rgba(0, 0, 0, 0.6);
+    }
+    .slot {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+      height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.1rem;
+      cursor: pointer;
+      transition: transform 0.15s, background 0.15s;
+    }
+    .slot:hover { background: rgba(255, 255, 255, 0.14); }
+    .slot.selected {
+      background: rgba(255, 218, 121, 0.35);
+      outline: 2px solid #ffda79;
+      transform: translateY(-4px) scale(1.06);
+    }
+    .slot.matched {
+      animation: popOut 0.35s ease forwards;
+    }
+    @keyframes popOut {
+      0% { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(0); opacity: 0; }
+    }
+    .controls {
+      margin-top: 18px;
+      display: flex;
+      gap: 12px;
+    }
+    button {
+      background: #ffda79;
+      color: #2c1e16;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover { background: #ffc845; }
+    #message {
+      margin-top: 14px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #7bed9f;
+      min-height: 28px;
+    }
+  </style>
 </head>
 <body>
 
-    <header>
-        <h1>Goods Sort Mobile</h1>
-        <div class="stats">Score: <span id="score">0</span> | Matches Left: <span id="matches-left">--</span></div>
-    </header>
-
-    <div id="game-container">
-        <div id="message">Tap items to collect & match 3!</div>
-        <div id="shelves-area"></div>
-        <div id="tray" title="Matching Tray"></div>
+  <header>
+    <h1>🛒 Goods Sort</h1>
+    <div class="stats">
+      <span>Level: <strong id="level">1</strong></span>
+      <span>Score: <strong id="score">0</strong></span>
+      <span>Moves: <strong id="moves">0</strong></span>
     </div>
+  </header>
 
-    <button class="btn" onclick="initGame()">Restart Game</button>
+  <div class="cabinet" id="cabinet"></div>
 
-<script>
-    const icons = ['🥤', '🍿', '🍎', '🍫', '🥫', '🧃'];
-    let shelves = [];
-    let tray = [];
+  <div id="message"></div>
+
+  <div class="controls">
+    <button onclick="shuffleBoard()">🔀 Shuffle</button>
+    <button onclick="initLevel(level)">🔄 Restart Level</button>
+  </div>
+
+  <script>
+    const ALL_GOODS = ['🥤', '🧃', '🥫', '🍪', '🍩', '🧁', '🍎', '🍌', '🍓', '🧸', '⚽', '🪴'];
+    let level = 1;
     let score = 0;
-    const maxTraySize = 6;
+    let moves = 0;
+    let shelves = [];
+    let selected = null; // { shelfIdx, slotIdx }
+    let locked = false;
 
-    function initGame() {
-        score = 0;
-        document.getElementById('score').innerText = score;
-        // Generate random shelves setup (3 shelves, 4 items each)
+    const cabinetEl = document.getElementById('cabinet');
+    const levelEl = document.getElementById('level');
+    const scoreEl = document.getElementById('score');
+    const movesEl = document.getElementById('moves');
+    const msgEl = document.getElementById('message');
+
+    function initLevel(lvl) {
+      level = lvl;
+      moves = 0;
+      selected = null;
+      locked = false;
+      msgEl.textContent = '';
+      updateHUD();
+
+      const shelfCount = Math.min(6 + (lvl - 1), 9); // 6 to 9 shelves
+      const itemTypesCount = Math.min(4 + (lvl - 1), ALL_GOODS.length);
+      const chosenGoods = ALL_GOODS.slice(0, itemTypesCount);
+
+      // Create sets of 3 for each chosen item, leaving enough empty slots to maneuver
+      let pool = [];
+      const maxTriples = Math.floor((shelfCount * 3 - 3) / 3);
+      for (let i = 0; i < maxTriples; i++) {
+        const item = chosenGoods[i % chosenGoods.length];
+        pool.push(item, item, item);
+      }
+
+      while (pool.length < shelfCount * 3) {
+        pool.push(null);
+      }
+
+      // Shuffle pool and ensure no shelf starts already matched
+      do {
+        pool.sort(() => Math.random() - 0.5);
         shelves = [];
-        for (let i = 0; i < 3; i++) {
-            let shelf = [];
-            for (let j = 0; j < 4; j++) {
-                // Pick random icon ensuring balance
-                let randomIcon = icons[Math.floor(Math.random() * icons.length)];
-                shelf.push(randomIcon);
-            }
-            shelves.push(shelf);
+        for (let i = 0; i < shelfCount; i++) {
+          shelves.push(pool.slice(i * 3, i * 3 + 3));
         }
-        tray = [];
-        render();
+      } while (shelves.some(s => s[0] && s[0] === s[1] && s[1] === s[2]));
+
+      render();
     }
 
-    function render() {
-        const shelvesArea = document.getElementById('shelves-area');
-        shelvesArea.innerHTML = '';
-        
-        let totalItems = 0;
+    function render(matchedShelfIdx = -1) {
+      cabinetEl.innerHTML = '';
+      shelves.forEach((shelf, sIdx) => {
+        const shelfDiv = document.createElement('div');
+        shelfDiv.className = 'shelf';
 
-        shelves.forEach((shelf, sIdx) => {
-            const shelfDiv = document.createElement('div');
-            shelfDiv.className = 'shelf';
-            shelf.forEach((item, iIdx) => {
-                const itemDiv = document.createElement('div');
-                if (item) {
-                    totalItems++;
-                    itemDiv.className = 'item';
-                    itemDiv.innerText = item;
-                    itemDiv.onclick = () => handleItemClick(sIdx, iIdx);
-                } else {
-                    itemDiv.className = 'item empty';
-                }
-                shelfDiv.appendChild(itemDiv);
-            });
-            shelvesArea.appendChild(shelfDiv);
+        shelf.forEach((item, slotIdx) => {
+          const slotDiv = document.createElement('div');
+          slotDiv.className = 'slot';
+          if (selected && selected.shelfIdx === sIdx && selected.slotIdx === slotIdx) {
+            slotDiv.classList.add('selected');
+          }
+          if (sIdx === matchedShelfIdx && item !== null) {
+            slotDiv.classList.add('matched');
+          }
+          slotDiv.textContent = item || '';
+          slotDiv.onclick = () => handleSlotClick(sIdx, slotIdx);
+          shelfDiv.appendChild(slotDiv);
         });
 
-        // Render Tray
-        const trayDiv = document.getElementById('tray');
-        trayDiv.innerHTML = '';
-        for (let i = 0; i < maxTraySize; i++) {
-            const slotDiv = document.createElement('div');
-            if (i < tray.length) {
-                slotDiv.className = 'item selected';
-                slotDiv.innerText = tray[i];
-            } else {
-                slotDiv.className = 'item empty';
-            }
-            trayDiv.appendChild(slotDiv);
-        }
-
-        document.getElementById('matches-left').innerText = totalItems;
-
-        // Check Win/Loss conditions
-        let msg = document.getElementById('message');
-        if (totalItems === 0) {
-            msg.innerText = "🎉 Level Cleared!";
-        } else if (tray.length >= maxTraySize) {
-            msg.innerText = "❌ Tray Full! Game Over.";
-        } else {
-            msg.innerText = "Sort goods into matching triples!";
-        }
+        cabinetEl.appendChild(shelfDiv);
+      });
     }
 
-    function handleItemClick(sIdx, iIdx) {
-        if (tray.length >= maxTraySize) return;
-        let item = shelves[sIdx][iIdx];
-        if (!item) return;
+    function handleSlotClick(sIdx, slotIdx) {
+      if (locked) return;
+      const clickedItem = shelves[sIdx][slotIdx];
 
-        // Move item to tray
-        shelves[sIdx][iIdx] = null;
-        tray.push(item);
+      // Select an item
+      if (!selected) {
+        if (clickedItem !== null) {
+          selected = { shelfIdx: sIdx, slotIdx: slotIdx };
+          render();
+        }
+        return;
+      }
 
-        // Check matches in tray (Triple match check)
-        checkTriples();
+      // Deselect if clicking the same slot
+      if (selected.shelfIdx === sIdx && selected.slotIdx === slotIdx) {
+        selected = null;
         render();
+        return;
+      }
+
+      // Switch selection if clicking another occupied slot
+      if (clickedItem !== null) {
+        selected = { shelfIdx: sIdx, slotIdx: slotIdx };
+        render();
+        return;
+      }
+
+      // Move item into empty slot
+      shelves[sIdx][slotIdx] = shelves[selected.shelfIdx][selected.slotIdx];
+      shelves[selected.shelfIdx][selected.slotIdx] = null;
+      selected = null;
+      moves++;
+      updateHUD();
+
+      checkMatch(sIdx);
     }
 
-    function checkTriples() {
-        let counts = {};
-        tray.forEach(item => counts[item] = (counts[item] || 0) + 1);
-
-        for (let item in counts) {
-            if (counts[item] >= 3) {
-                // Remove 3 of them
-                let removed = 0;
-                tray = tray.filter(i => {
-                    if (i === item && removed < 3) {
-                        removed++;
-                        return false;
-                    }
-                    return true;
-                });
-                score += 100;
-                document.getElementById('score').innerText = score;
-            }
-        }
+    function checkMatch(sIdx) {
+      const shelf = shelves[sIdx];
+      if (shelf[0] && shelf[0] === shelf[1] && shelf[1] === shelf[2]) {
+        locked = true;
+        render(sIdx);
+        setTimeout(() => {
+          shelves[sIdx] = [null, null, null];
+          score += 100;
+          locked = false;
+          updateHUD();
+          render();
+          checkWin();
+        }, 350);
+      } else {
+        render();
+      }
     }
 
-    initGame();
-</script>
+    function checkWin() {
+      const isEmpty = shelves.every(shelf => shelf.every(slot => slot === null));
+      if (isEmpty) {
+        msgEl.textContent = `🎉 Level ${level} Cleared! Loading next level...`;
+        setTimeout(() => initLevel(level + 1), 1500);
+      }
+    }
+
+    function shuffleBoard() {
+      if (locked) return;
+      selected = null;
+      let flat = shelves.flat();
+      flat.sort(() => Math.random() - 0.5);
+      for (let i = 0; i < shelves.length; i++) {
+        shelves[i] = flat.slice(i * 3, i * 3 + 3);
+      }
+      render();
+    }
+
+    function updateHUD() {
+      levelEl.textContent = level;
+      scoreEl.textContent = score;
+      movesEl.textContent = moves;
+    }
+
+    initLevel(1);
+  </script>
 </body>
 </html>
