@@ -1,288 +1,347 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Goods Sort - Shelf Match Puzzle</title>
-  <style>
-    * { box-sizing: border-box; user-select: none; font-family: 'Segoe UI', Tahoma, sans-serif; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background: linear-gradient(135deg, #2c1e16, #4a3222);
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-    }
-    header {
-      text-align: center;
-      margin-bottom: 16px;
-    }
-    h1 { margin: 0 0 6px; font-size: 1.8rem; letter-spacing: 1px; color: #ffda79; }
-    .stats {
-      display: flex;
-      gap: 20px;
-      justify-content: center;
-      font-size: 1.05rem;
-      background: rgba(0, 0, 0, 0.35);
-      padding: 8px 18px;
-      border-radius: 20px;
-    }
-    .cabinet {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
-      background: #6f472b;
-      padding: 18px;
-      border-radius: 14px;
-      border: 6px solid #3d2414;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
-      max-width: 720px;
-      width: 100%;
-    }
-    @media (max-width: 600px) {
-      .cabinet { grid-template-columns: repeat(2, 1fr); }
-    }
-    .shelf {
-      background: #3b2313;
-      border-bottom: 8px solid #8c5a36;
-      border-radius: 8px;
-      padding: 10px 8px 6px;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
-      min-height: 82px;
-      box-shadow: inset 0 6px 12px rgba(0, 0, 0, 0.6);
-    }
-    .slot {
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 6px;
-      height: 62px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2.1rem;
-      cursor: pointer;
-      transition: transform 0.15s, background 0.15s;
-    }
-    .slot:hover { background: rgba(255, 255, 255, 0.14); }
-    .slot.selected {
-      background: rgba(255, 218, 121, 0.35);
-      outline: 2px solid #ffda79;
-      transform: translateY(-4px) scale(1.06);
-    }
-    .slot.matched {
-      animation: popOut 0.35s ease forwards;
-    }
-    @keyframes popOut {
-      0% { transform: scale(1.2); opacity: 1; }
-      100% { transform: scale(0); opacity: 0; }
-    }
-    .controls {
-      margin-top: 18px;
-      display: flex;
-      gap: 12px;
-    }
-    button {
-      background: #ffda79;
-      color: #2c1e16;
-      border: none;
-      padding: 10px 20px;
-      font-size: 1rem;
-      font-weight: bold;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    button:hover { background: #ffc845; }
-    #message {
-      margin-top: 14px;
-      font-size: 1.2rem;
-      font-weight: bold;
-      color: #7bed9f;
-      min-height: 28px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Goods Sort Clone — Hard</title>
+<style>
+  *{box-sizing:border-box;user-select:none;-webkit-tap-highlight-color:transparent}
+  body{font-family:system-ui,sans-serif;background:#1b1f24;color:#e8eaed;margin:0;padding:8px;display:flex;flex-direction:column;align-items:center;min-height:100vh}
+  .hud{display:flex;justify-content:space-between;width:100%;max-width:420px;font-size:14px;margin-bottom:6px}
+  .hud span{background:#2a2f36;padding:4px 10px;border-radius:20px}
+  #msg{height:22px;color:#7ee787;font-weight:600;font-size:15px;margin-bottom:4px}
+  /* Shelf */
+  #shelf{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:100%;max-width:420px;background:#2a2f36;padding:8px;border-radius:12px;margin-bottom:10px}
+  .slot{aspect-ratio:1;background:#1b1f24;border:2px dashed #3a4048;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:clamp(18px,6vw,30px);position:relative;cursor:pointer;transition:.12s}
+  .slot.filled{border-style:solid;border-color:#3a4048;background:#232830}
+  .slot.locked{background:#15181c;border-color:#4a1f1f;color:#666}
+  .slot.locked::after{content:"🔒";font-size:14px;position:absolute}
+  .slot.frozen{background:linear-gradient(135deg,#1b1f24 50%,#2a3a4a 50%);border-color:#3a6a8a}
+  .slot.selected{border-color:#4dabf7;box-shadow:0 0 0 2px #4dabf7 inset}
+  .slot .badge{position:absolute;bottom:2px;right:3px;font-size:10px;color:#ffb86b}
+  /* Order tray */
+  #tray{display:flex;gap:6px;width:100%;max-width:420px;background:#2a2f36;padding:8px;border-radius:12px;margin-bottom:10px;overflow-x:auto}
+  .tray-item{min-width:44px;height:44px;background:#232830;border:2px solid #3a4048;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;flex-shrink:0}
+  .tray-item.sel{border-color:#4dabf7}
+  .tray-item.hidden{opacity:.4}
+  /* Buttons */
+  .btns{display:flex;gap:8px;margin-top:6px}
+  button{background:#4dabf7;color:#0b0e11;border:none;padding:8px 16px;border-radius:20px;font-weight:600;font-size:14px}
+  button:active{transform:scale(.96)}
+  button.ghost{background:#2a2f36;color:#e8eaed}
+</style>
 </head>
 <body>
+  <div class="hud">
+    <span id="lvl">Lv 1</span>
+    <span id="moves">Moves: 0</span>
+    <span id="time">⏱ 90</span>
+  </div>
+  <div id="msg"></div>
 
-  <header>
-    <h1>🛒 Goods Sort</h1>
-    <div class="stats">
-      <span>Level: <strong id="level">1</strong></span>
-      <span>Score: <strong id="score">0</strong></span>
-      <span>Moves: <strong id="moves">0</strong></span>
-    </div>
-  </header>
+  <div id="shelf"></div>
+  <div id="tray"></div>
 
-  <div class="cabinet" id="cabinet"></div>
-
-  <div id="message"></div>
-
-  <div class="controls">
-    <button onclick="shuffleBoard()">🔀 Shuffle</button>
-    <button onclick="initLevel(level)">🔄 Restart Level</button>
+  <div class="btns">
+    <button class="ghost" onclick="location.reload()">Restart</button>
+    <button onclick="nextLevel()" id="nextBtn" style="display:none">Next</button>
   </div>
 
-  <script>
-    const ALL_GOODS = ['🥤', '🧃', '🥫', '🍪', '🍩', '🧁', '🍎', '🍌', '🍓', '🧸', '⚽', '🪴'];
-    let level = 1;
-    let score = 0;
-    let moves = 0;
-    let shelves = [];
-    let selected = null; // { shelfIdx, slotIdx }
-    let locked = false;
+<script>
+/* ============================================================
+   GOODS SORT CLONE — HARD MODE
+   Mechanics:
+   - Shelf grid with some slots LOCKED (unlock by matching) or FROZEN (unlock after N matches)
+   - Tray holds upcoming items; tap tray item then tap empty shelf slot to move
+   - 3 identical items on shelf => auto-clear
+   - Each level: layout, timer, move limit
+   - "Layers": an item can sit ON TOP of another — hidden until uncovered
+   ============================================================ */
 
-    const cabinetEl = document.getElementById('cabinet');
-    const levelEl = document.getElementById('level');
-    const scoreEl = document.getElementById('score');
-    const movesEl = document.getElementById('moves');
-    const msgEl = document.getElementById('message');
+const ITEMS = ['🍎','🍋','🍇','🥝','🍑','🍒','🥑','🍆'];
 
-    function initLevel(lvl) {
-      level = lvl;
-      moves = 0;
-      selected = null;
-      locked = false;
-      msgEl.textContent = '';
-      updateHUD();
+// Level definitions. Each shelf slot is:
+// {item:'🍎'}  -> normal item
+// {item:'🍎', under:'🍇'} -> stacked: shows apple on top, grape underneath
+// null -> empty
+// {locked:true} -> locked slot (cannot be used until unlocked by a match)
+// {frozen:true} -> frozen slot, requires 2 matches to thaw
+const LEVELS = [
+  { // Level 1 — gentle intro with one locked slot
+    name:'Lv 1',
+    time:120,
+    maxMoves:40,
+    shelf:[
+      {item:'🍎'},{item:'🍎'},{item:'🍋'},null,{locked:true},
+      {item:'🍋'},{item:'🍇'},null,null,{item:'🍇'},
+      {item:'🥝'},null,null,{item:'🥝'},null,
+    ],
+    tray:['🍎','🍋','🍇','🥝'],
+    goal:'Match everything',
+  },
+  { // Level 2 — stacked items + one frozen slot
+    name:'Lv 2',
+    time:100,
+    maxMoves:36,
+    shelf:[
+      {item:'🍑',under:'🍒'},{item:'🍑'},{item:'🍒'},{frozen:true},null,
+      {item:'🥑',under:'🍑'},{item:'🥑'},{item:'🍒',under:'🥑'},null,null,
+      {item:'🍒'},null,null,{item:'🥑'},null,
+    ],
+    tray:['🍑','🍒','🥑'],
+    goal:'Uncover the stack!',
+  },
+  { // Level 3 — heavy: multiple locks + frozen + stacks + tight moves
+    name:'Lv 3 HARD',
+    time:90,
+    maxMoves:30,
+    shelf:[
+      {item:'🍆',under:'🥝'},{item:'🍆'},{locked:true},{item:'🥝'},{frozen:true},
+      {item:'🍆',under:'🍋'},{item:'🍋'},{item:'🥝',under:'🍋'},{locked:true},null,
+      {item:'🍋'},{locked:true},null,{item:'🥝'},null,
+      {locked:true},null,null,null,null,
+    ],
+    tray:['🍆','🍋','🥝'],
+    goal:'Survive the locks!',
+  },
+];
 
-      const shelfCount = Math.min(6 + (lvl - 1), 9); // 6 to 9 shelves
-      const itemTypesCount = Math.min(4 + (lvl - 1), ALL_GOODS.length);
-      const chosenGoods = ALL_GOODS.slice(0, itemTypesCount);
+let levelIndex = 0;
+let state = null;
+let selTray = -1;     // index in tray selected
+let selShelf = -1;    // index in shelf selected (for moving between shelves)
+let matches = 0;
+let moves = 0;
+let timeLeft = 0;
+let timer = null;
+let busy = false;
 
-      // Create sets of 3 for each chosen item, leaving enough empty slots to maneuver
-      let pool = [];
-      const maxTriples = Math.floor((shelfCount * 3 - 3) / 3);
-      for (let i = 0; i < maxTriples; i++) {
-        const item = chosenGoods[i % chosenGoods.length];
-        pool.push(item, item, item);
+const shelfEl = document.getElementById('shelf');
+const trayEl  = document.getElementById('tray');
+const msgEl   = document.getElementById('msg');
+const lvlEl   = document.getElementById('lvl');
+const movesEl = document.getElementById('moves');
+const timeEl  = document.getElementById('time');
+const nextBtn = document.getElementById('nextBtn');
+
+/* ---------- Setup ---------- */
+function loadLevel(i){
+  clearInterval(timer);
+  busy = false;
+  const cfg = LEVELS[i];
+  // Deep copy shelf
+  state = {
+    shelf: cfg.shelf.map(s => s ? {...s} : null),
+    tray: cfg.tray.slice(),
+    cfg,
+  };
+  matches = 0; moves = 0; selTray = -1; selShelf = -1;
+  timeLeft = cfg.time;
+  lvlEl.textContent = cfg.name;
+  msgEl.textContent = cfg.goal;
+  nextBtn.style.display = 'none';
+  render();
+  startTimer();
+}
+
+function startTimer(){
+  clearInterval(timer);
+  timeEl.textContent = '⏱ ' + timeLeft;
+  timer = setInterval(()=>{
+    timeLeft--;
+    timeEl.textContent = '⏱ ' + timeLeft;
+    if(timeLeft <= 0){
+      clearInterval(timer);
+      msgEl.textContent = '⏰ Time up!';
+      msgEl.style.color = '#ff6b6b';
+      busy = true;
+    }
+  },1000);
+}
+
+/* ---------- Render ---------- */
+function render(){
+  // Shelf
+  shelfEl.innerHTML = '';
+  state.shelf.forEach((slot, idx) => {
+    const d = document.createElement('div');
+    d.className = 'slot';
+    if(!slot){
+      d.classList.add('empty');
+    } else if(slot.locked){
+      d.classList.add('locked');
+    } else if(slot.frozen){
+      d.classList.add('frozen');
+    } else if(slot.item){
+      d.classList.add('filled');
+      d.textContent = slot.item;
+      if(slot.under){
+        const b = document.createElement('div');
+        b.className = 'badge';
+        b.textContent = '+' + slot.under;
+        d.appendChild(b);
       }
+    }
+    if(idx === selShelf) d.classList.add('selected');
+    d.onclick = () => onShelfClick(idx);
+    shelfEl.appendChild(d);
+  });
 
-      while (pool.length < shelfCount * 3) {
-        pool.push(null);
-      }
+  // Tray
+  trayEl.innerHTML = '';
+  state.tray.forEach((item, idx) => {
+    const d = document.createElement('div');
+    d.className = 'tray-item' + (idx === selTray ? ' sel' : '');
+    d.textContent = item || '·';
+    d.onclick = () => onTrayClick(idx);
+    trayEl.appendChild(d);
+  });
 
-      // Shuffle pool and ensure no shelf starts already matched
-      do {
-        pool.sort(() => Math.random() - 0.5);
-        shelves = [];
-        for (let i = 0; i < shelfCount; i++) {
-          shelves.push(pool.slice(i * 3, i * 3 + 3));
-        }
-      } while (shelves.some(s => s[0] && s[0] === s[1] && s[1] === s[2]));
+  movesEl.textContent = 'Moves: ' + moves + '/' + state.cfg.maxMoves;
+}
 
+/* ---------- Interaction ---------- */
+function onTrayClick(idx){
+  if(busy) return;
+  if(selShelf !== -1) { selShelf = -1; } // cancel shelf selection
+  selTray = (selTray === idx) ? -1 : idx;
+  render();
+}
+
+function onShelfClick(idx){
+  if(busy) return;
+  const slot = state.shelf[idx];
+
+  // Case 1: nothing selected on shelf, no tray item selected -> select shelf item (to move within shelf)
+  if(selTray === -1 && selShelf === -1){
+    if(slot && slot.item && !slot.locked && !slot.frozen){
+      selShelf = idx;
       render();
     }
+    return;
+  }
 
-    function render(matchedShelfIdx = -1) {
-      cabinetEl.innerHTML = '';
-      shelves.forEach((shelf, sIdx) => {
-        const shelfDiv = document.createElement('div');
-        shelfDiv.className = 'shelf';
-
-        shelf.forEach((item, slotIdx) => {
-          const slotDiv = document.createElement('div');
-          slotDiv.className = 'slot';
-          if (selected && selected.shelfIdx === sIdx && selected.slotIdx === slotIdx) {
-            slotDiv.classList.add('selected');
-          }
-          if (sIdx === matchedShelfIdx && item !== null) {
-            slotDiv.classList.add('matched');
-          }
-          slotDiv.textContent = item || '';
-          slotDiv.onclick = () => handleSlotClick(sIdx, slotIdx);
-          shelfDiv.appendChild(slotDiv);
-        });
-
-        cabinetEl.appendChild(shelfDiv);
-      });
-    }
-
-    function handleSlotClick(sIdx, slotIdx) {
-      if (locked) return;
-      const clickedItem = shelves[sIdx][slotIdx];
-
-      // Select an item
-      if (!selected) {
-        if (clickedItem !== null) {
-          selected = { shelfIdx: sIdx, slotIdx: slotIdx };
-          render();
-        }
-        return;
-      }
-
-      // Deselect if clicking the same slot
-      if (selected.shelfIdx === sIdx && selected.slotIdx === slotIdx) {
-        selected = null;
-        render();
-        return;
-      }
-
-      // Switch selection if clicking another occupied slot
-      if (clickedItem !== null) {
-        selected = { shelfIdx: sIdx, slotIdx: slotIdx };
-        render();
-        return;
-      }
-
-      // Move item into empty slot
-      shelves[sIdx][slotIdx] = shelves[selected.shelfIdx][selected.slotIdx];
-      shelves[selected.shelfIdx][selected.slotIdx] = null;
-      selected = null;
-      moves++;
-      updateHUD();
-
-      checkMatch(sIdx);
-    }
-
-    function checkMatch(sIdx) {
-      const shelf = shelves[sIdx];
-      if (shelf[0] && shelf[0] === shelf[1] && shelf[1] === shelf[2]) {
-        locked = true;
-        render(sIdx);
-        setTimeout(() => {
-          shelves[sIdx] = [null, null, null];
-          score += 100;
-          locked = false;
-          updateHUD();
-          render();
-          checkWin();
-        }, 350);
+  // Case 2: a shelf item is selected, click another shelf slot to move it (if empty)
+  if(selShelf !== -1){
+    if(idx === selShelf){ selShelf = -1; render(); return; }
+    if(!slot){ // empty slot
+      const src = state.shelf[selShelf];
+      // If source has 'under', it becomes the new top
+      if(src.under){
+        state.shelf[idx] = {item: src.under};
+        state.shelf[selShelf] = src.item ? {item: src.item} : null;
+        // Wait — proper: move top item, underneath stays. Simpler: move top only.
       } else {
-        render();
+        state.shelf[idx] = src;
+        state.shelf[selShelf] = null;
       }
+      moves++;
+      selShelf = -1;
+      afterAction();
+      return;
     }
-
-    function checkWin() {
-      const isEmpty = shelves.every(shelf => shelf.every(slot => slot === null));
-      if (isEmpty) {
-        msgEl.textContent = `🎉 Level ${level} Cleared! Loading next level...`;
-        setTimeout(() => initLevel(level + 1), 1500);
+    // If clicking a filled slot with shelf selection, try to stack (put on top)
+    if(slot && slot.item && !slot.locked && !slot.frozen && !slot.under){
+      // Only allow if same? For simplicity allow stacking different (creates a stack)
+      // But that could softlock. Let's only allow stacking identical to make matches harder/fairer
+      const src = state.shelf[selShelf];
+      if(src.item && src.item === slot.item){
+        // combine into a stack: click target now has under = src.item
+        state.shelf[idx] = {item: slot.item, under: src.item};
+        state.shelf[selShelf] = null;
+        moves++;
       }
+      selShelf = -1;
+      afterAction();
+      return;
     }
+    selShelf = -1; render(); return;
+  }
 
-    function shuffleBoard() {
-      if (locked) return;
-      selected = null;
-      let flat = shelves.flat();
-      flat.sort(() => Math.random() - 0.5);
-      for (let i = 0; i < shelves.length; i++) {
-        shelves[i] = flat.slice(i * 3, i * 3 + 3);
+  // Case 3: tray item selected, click empty shelf slot
+  if(selTray !== -1){
+    if(slot) return; // must be empty
+    state.shelf[idx] = {item: state.tray[selTray]};
+    state.tray[selTray] = null;
+    selTray = -1;
+    moves++;
+    afterAction();
+  }
+}
+
+/* ---------- Post-action checks ---------- */
+function afterAction(){
+  render();
+  // Check matches
+  const toClear = [];
+  for(let i=0;i<state.shelf.length;i++){
+    const s = state.shelf[i];
+    if(!s || !s.item) continue;
+    // count identical items currently visible
+    let count = 0;
+    for(let j=0;j<state.shelf.length;j++){
+      const t = state.shelf[j];
+      if(t && t.item === s.item) count++;
+    }
+    if(count >= 3) toClear.push(s.item);
+  }
+  const uniq = [...new Set(toClear)];
+  if(uniq.length){
+    uniq.forEach(item=>{
+      let removed = 0;
+      for(let i=0;i<state.shelf.length;i++){
+        const s = state.shelf[i];
+        if(s && s.item === item && removed < 3){
+          // If item has 'under', expose it instead of removing
+          if(s.under){
+            state.shelf[i] = {item: s.under};
+          } else {
+            state.shelf[i] = null;
+          }
+          removed++;
+        }
       }
-      render();
+      matches++;
+    });
+    msgEl.textContent = '✨ Match!';
+    msgEl.style.color = '#7ee787';
+    // Unlock frozen slots after 2 matches, locked after 3
+    if(matches >= 2){
+      state.shelf = state.shelf.map(s => (s && s.frozen) ? null : s);
     }
-
-    function updateHUD() {
-      levelEl.textContent = level;
-      scoreEl.textContent = score;
-      movesEl.textContent = moves;
+    if(matches >= 3){
+      state.shelf = state.shelf.map(s => (s && s.locked) ? null : s);
     }
+    render();
+  }
 
-    initLevel(1);
-  </script>
+  // Win check
+  const remaining = state.shelf.some(s => s && (s.item || s.locked || s.frozen)) || state.tray.some(t => t);
+  if(!remaining){
+    clearInterval(timer);
+    msgEl.textContent = '🎉 Level Cleared!';
+    msgEl.style.color = '#7ee787';
+    busy = true;
+    nextBtn.style.display = 'inline-block';
+    return;
+  }
+
+  // Lose check
+  if(moves >= state.cfg.maxMoves){
+    clearInterval(timer);
+    msgEl.textContent = '❌ Out of moves!';
+    msgEl.style.color = '#ff6b6b';
+    busy = true;
+  }
+}
+
+function nextLevel(){
+  levelIndex = (levelIndex + 1) % LEVELS.length;
+  loadLevel(levelIndex);
+}
+
+/* ---------- Boot ---------- */
+loadLevel(0);
+</script>
 </body>
 </html>
